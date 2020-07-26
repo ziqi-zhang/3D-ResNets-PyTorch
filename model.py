@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from pdb import set_trace as st
 
 from models import resnet, resnet2p1d, pre_act_resnet, wide_resnet, resnext, densenet
 
@@ -16,7 +17,7 @@ def get_module_name(name):
     return name[i]
 
 
-def get_fine_tuning_parameters(model, ft_begin_module):
+def get_fine_tuning_parameters(model, ft_begin_module, body_lr):
     if not ft_begin_module:
         return model.parameters()
 
@@ -27,7 +28,12 @@ def get_fine_tuning_parameters(model, ft_begin_module):
             add_flag = True
 
         if add_flag:
-            parameters.append({'params': v})
+            if k == "fc":
+                parameters.append({'params': v, 'lr': body_lr *10})
+            else:
+                parameters.append({'params': v, 'lr': body_lr})
+        # if add_flag:
+        #         parameters.append({'params': v})
 
     return parameters
 

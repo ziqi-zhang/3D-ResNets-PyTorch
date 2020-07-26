@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 
 from joblib import Parallel, delayed
-
+from subprocess import PIPE
 
 def video_process(video_file_path, dst_root_path, ext, fps=-1, size=240):
     if ext != video_file_path.suffix:
@@ -14,7 +14,7 @@ def video_process(video_file_path, dst_root_path, ext, fps=-1, size=240):
                    'stream=width,height,avg_frame_rate,duration').split()
     ffprobe_cmd.append(str(video_file_path))
 
-    p = subprocess.run(ffprobe_cmd, capture_output=True)
+    p = subprocess.run(ffprobe_cmd , stdout=PIPE, stderr=PIPE)
     res = p.stdout.decode('utf-8').splitlines()
     if len(res) < 4:
         return

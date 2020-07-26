@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import random
 import os
+import os.path as osp
 
 import numpy as np
 import torch
@@ -48,6 +49,8 @@ def get_opt():
             opt.resume_path = opt.root_path / opt.resume_path
         if opt.pretrain_path is not None:
             opt.pretrain_path = opt.root_path / opt.pretrain_path
+    if not osp.exists(opt.result_path):
+        os.makedirs(opt.result_path)
 
     if opt.pretrain_path is not None:
         opt.n_finetune_classes = opt.n_classes
@@ -346,7 +349,7 @@ def main_worker(index, opt):
     model = make_data_parallel(model, opt.distributed, opt.device)
 
     if opt.pretrain_path:
-        parameters = get_fine_tuning_parameters(model, opt.ft_begin_module)
+        parameters = get_fine_tuning_parameters(model, opt.ft_begin_module, opt.learning_rate)
     else:
         parameters = model.parameters()
 
@@ -387,7 +390,7 @@ def main_worker(index, opt):
                         train_batch_logger, tb_writer, opt.distributed)
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
-                save_file_path = opt.result_path / 'save_{}.pth'.format(i)
+                save_file_path = opt.result_path / 'ckpt.pth'.format(i)
                 save_checkpoint(save_file_path, i, opt.arch, model, optimizer,
                                 scheduler)
 
